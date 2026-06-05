@@ -169,11 +169,23 @@ let wrong = [];
 let right = [];
 
 /* ===== LOAD JSON ===== */
-fetch("qa.json")
-  .then(r => r.json())
+fetch("./qa.json")
+  .then(r => {
+    if (!r.ok) throw new Error("qa.json not found (404)");
+    return r.json();
+  })
   .then(data => {
+    console.log("Loaded:", data.length, "questions");
+
     questions = shuffle([...data]);
+    currentIndex = 0;
     loadQuestion();
+  })
+  .catch(err => {
+    console.error(err);
+
+    document.getElementById("question").innerText =
+      "ERROR: qa.json failed to load. Check file path in GitHub Pages.";
   });
 
 /* ===== SHUFFLE ===== */
@@ -187,16 +199,23 @@ function shuffle(arr) {
 
 /* ===== LOAD QUESTION ===== */
 function loadQuestion() {
-  document.getElementById("question").innerText = q.question;
   const q = questions[currentIndex];
+
+  if (!q) {
+    document.getElementById("question").innerText = "No question loaded";
+    return;
+  }
+
   selectedAnswer = [];
+
+  document.getElementById("question").innerText = q.question;
 
   document.getElementById("result").innerText = "";
 
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
 
-  const isMulti = q.answer.length > 1;
+  const isMulti = Array.isArray(q.answer) && q.answer.length > 1;
 
   q.options.forEach(opt => {
     const label = document.createElement("label");
