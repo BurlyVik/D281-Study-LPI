@@ -50,7 +50,7 @@ fetch("qa.json")
 
 function loadQuestion() {
   const q = questions[currentIndex];
-  selectedAnswer = null;
+  selectedAnswer = [];
 
   document.getElementById("result").innerText = "";
   document.getElementById("nextBtn").disabled = true;
@@ -61,17 +61,31 @@ function loadQuestion() {
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
 
+  const isMultiple = q.answer.length > 1;
+
   q.options.forEach(opt => {
     const label = document.createElement("label");
     label.className = "option";
 
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.name = "option";
-    radio.value = opt;
-    radio.onclick = () => selectedAnswer = opt;
+    const input = document.createElement("input");
+    input.type = isMultiple ? "checkbox" : "radio";
+    input.name = "option";
 
-    label.appendChild(radio);
+    input.value = opt;
+
+    input.onchange = () => {
+      if (isMultiple) {
+        if (input.checked) {
+          selectedAnswer.push(opt);
+        } else {
+          selectedAnswer = selectedAnswer.filter(a => a !== opt);
+        }
+      } else {
+        selectedAnswer = [opt];
+      }
+    };
+
+    label.appendChild(input);
     label.appendChild(document.createTextNode(" " + opt));
 
     optionsDiv.appendChild(label);
@@ -79,28 +93,22 @@ function loadQuestion() {
 }
 
 function submitAnswer() {
-  if (!selectedAnswer) {
-    alert("Select an answer first");
+  const q = questions[currentIndex];
+
+  if (!selectedAnswer || selectedAnswer.length === 0) {
+    alert("Select at least one answer");
     return;
   }
 
-  const q = questions[currentIndex];
-  const isCorrect = q.answer.includes(selectedAnswer);
+  const correct = q.answer.sort().join(",");
+  const user = selectedAnswer.sort().join(",");
+
+  const isCorrect = correct === user;
 
   document.getElementById("result").innerText =
     isCorrect ? "Correct ✅" : "Wrong ❌";
 
   document.getElementById("nextBtn").disabled = false;
-}
-
-function nextQuestion() {
-  if (currentIndex < questions.length - 1) {
-    currentIndex++;
-    loadQuestion();
-  } else {
-    document.getElementById("quiz-container").innerHTML =
-      "<h3>Quiz Complete 🎉</h3>";
-  }
 }
 
 function toggleFlag() {
