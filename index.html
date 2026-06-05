@@ -54,12 +54,13 @@ body {
   overflow: auto;
 }
 
-/* QUESTION */
+/* QUESTION TEXT CLEANUP */
 .question {
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 25px;
   max-width: 700px;
+  line-height: 1.4;
 }
 
 /* OPTIONS BLOCK */
@@ -69,14 +70,22 @@ body {
   text-align: left;
 }
 
-/* OPTION */
+/* OPTIONS TEXT CLEANUP */
 .option {
   display: block;
   margin: 10px 0;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   font-size: 16px;
   background: #fafafa;
+
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+  /* IMPROVE LABEL TEXT ALIGNMENT */
+.option input {
+  margin-right: 8px;
 }
 
 /* BUTTON ROW */
@@ -220,7 +229,7 @@ function loadQuestion() {
   const q = questions[currentIndex];
 
   if (!q) {
-    document.getElementById("question").innerText = "No question loaded";
+    document.getElementById("question").innerText = formatText(q.question);
     return;
   }
 
@@ -255,7 +264,7 @@ function loadQuestion() {
     };
 
     label.appendChild(input);
-    label.appendChild(document.createTextNode(" " + opt));
+    label.appendChild(document.createTextNode(" " + formatText(opt)));
 
     optionsDiv.appendChild(label);
   });
@@ -368,6 +377,15 @@ function nextQuestion() {
 function toggleFlag() {
   alert("Optional feature removed in this version");
 }
+
+function formatText(str) {
+  if (!str) return "";
+
+  return str
+    .toLowerCase()
+    .replace(/^\w/, c => c.toUpperCase()); // capitalize first letter only
+}
+  
 </script>
 
 </body>
