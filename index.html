@@ -18,10 +18,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   grid-template-rows: auto 1fr auto;
-  height: 100vh;
-  gap: 10px;
-  padding: 20px;
-  box-sizing: border-box;
 }
 
 /* TOP */
@@ -125,14 +121,6 @@ button:hover {
 <div class="container">
 
   <div class="top">Linux Quiz Challenge</div>
-
-  <div class="left">
-    <h4>Navigation</h4>
-    <button onclick="nextQuestion()">Next</button>
-    <button onclick="submitAnswer()">Submit</button>
-    <button onclick="toggleFlag()">Flag</button>
-  </div>
-
   <div class="middle">
   <div id="question" class="question"></div>
   <div id="options"></div>
@@ -159,7 +147,7 @@ button:hover {
 let questions = [];
 let currentIndex = 0;
 let selectedAnswer = [];
-let flagged = new Set();
+let flagged = [];
 
 /* ===== LOAD JSON ===== */
 fetch("qa.json")
@@ -185,9 +173,6 @@ function loadQuestion() {
 
   document.getElementById("result").innerText = "";
 
-  document.getElementById("question").innerText =
-    `Q${q.id}: ${q.question}`;
-
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
 
@@ -201,6 +186,7 @@ function loadQuestion() {
     const input = document.createElement("input");
     input.type = isMulti ? "checkbox" : "radio";
     input.name = "opt";
+
     input.value = opt;
 
     input.onchange = () => {
@@ -258,9 +244,16 @@ function submitAnswer() {
 
 /* ===== FLAG ===== */
 function toggleFlag() {
-  const id = questions[currentIndex].id;
+  const q = questions[currentIndex];
 
-  flagged.has(id) ? flagged.delete(id) : flagged.add(id);
+  const exists = flagged.find(f => f.id === q.id);
+
+  if (exists) {
+    flagged = flagged.filter(f => f.id !== q.id);
+  } else {
+    flagged.push({ id: q.id, index: currentIndex, text: q.question });
+  }
+
   renderFlags();
 }
 
@@ -268,11 +261,34 @@ function renderFlags() {
   const list = document.getElementById("flaggedList");
   list.innerHTML = "";
 
-  flagged.forEach(id => {
+  flagged.forEach(item => {
     const li = document.createElement("li");
-    li.innerText = "Question ID: " + id;
+
+    li.innerText = item.text;   // ONLY question text
+
+    li.style.cursor = "pointer";
+    li.style.marginBottom = "8px";
+
+    li.onclick = () => {
+      goToFlagged(item.id);
+    };
+
     list.appendChild(li);
   });
+}
+
+  function goToFlagged(id) {
+  const index = questions.findIndex(q => q.id === id);
+  if (index === -1) return;
+
+  currentIndex = index;
+
+  // reset selection + UI state
+  selectedAnswer = [];
+
+  loadQuestion(); // reload clean (unanswered)
+
+  document.getElementById("result").innerText = "";
 }
 </script>
 
