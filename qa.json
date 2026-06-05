@@ -554,7 +554,7 @@
   },
   {
     "id": 40,
-    "question": "FILL BLANK When typing a long command line at the shell, what single character can be used to split a command across multiple lines?",
+    "question": "When typing a long command line at the shell, what single character can be used to split a command across multiple lines?",
     "options": [
       "/",
       "\\"
@@ -781,7 +781,7 @@
   },
   {
     "id": 56,
-    "question": "FILL BLANK -\nWhat parameter of ls prints a recursive listing of a directory's content? (Specify ONLY the option name without any values or parameters.)",
+    "question": "-\nWhat parameter of ls prints a recursive listing of a directory's content? (Specify ONLY the option name without any values or parameters.)",
     "options": [
       "The answer is 'ls -R' ;)"
     ],
@@ -876,7 +876,7 @@
   },
   {
     "id": 63,
-    "question": "What command displays manual pages? (originally a FILL BLANK question)",
+    "question": "What command displays manual pages? (originally a  question)",
     "options": [
       "manul",
       "man",
