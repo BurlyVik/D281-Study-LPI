@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Linux Quiz</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 30px; }
+  .question { font-size: 20px; margin-bottom: 15px; }
+  .option { display: block; margin: 8px 0; }
+  button { margin-top: 10px; margin-right: 10px; padding: 8px 12px; }
+  .result { font-weight: bold; margin-top: 15px; }
+</style>
+</head>
+<body>
+
+<h2>Linux Quiz</h2>
+
+<div id="quiz-container">
+  <div id="question" class="question"></div>
+  <div id="options"></div>
+
+  <button onclick="submitAnswer()">Submit</button>
+  <button onclick="nextQuestion()" id="nextBtn" disabled>Next</button>
+  <button onclick="toggleFlag()">Flag for review</button>
+
+  <div id="result" class="result"></div>
+</div>
+
+<hr>
+<h3>Flagged Questions</h3>
+<ul id="flaggedList"></ul>
+
+<script>
+let questions = [];
+let currentIndex = 0;
+let selectedAnswer = null;
+let flagged = new Set();
+
+
+fetch("qa.json")
+  .then(res => res.json())
+  .then(data => {
+    questions = data;
+    loadQuestion();
+  })
+  .catch(err => {
+    document.body.innerHTML = "Failed to load qa.json";
+    console.error(err);
+  });
+
+function loadQuestion() {
+  const q = questions[currentIndex];
+  selectedAnswer = null;
+
+  document.getElementById("result").innerText = "";
+  document.getElementById("nextBtn").disabled = true;
+
+  document.getElementById("question").innerText =
+    `Q${q.id}: ${q.question}`;
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  q.options.forEach(opt => {
+    const label = document.createElement("label");
+    label.className = "option";
+
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "option";
+    radio.value = opt;
+    radio.onclick = () => selectedAnswer = opt;
+
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(" " + opt));
+
+    optionsDiv.appendChild(label);
+  });
+}
+
+function submitAnswer() {
+  if (!selectedAnswer) {
+    alert("Select an answer first");
+    return;
+  }
+
+  const q = questions[currentIndex];
+  const isCorrect = q.answer.includes(selectedAnswer);
+
+  document.getElementById("result").innerText =
+    isCorrect ? "Correct ✅" : "Wrong ❌";
+
+  document.getElementById("nextBtn").disabled = false;
+}
+
+function nextQuestion() {
+  if (currentIndex < questions.length - 1) {
+    currentIndex++;
+    loadQuestion();
+  } else {
+    document.getElementById("quiz-container").innerHTML =
+      "<h3>Quiz Complete 🎉</h3>";
+  }
+}
+
+function toggleFlag() {
+  const id = questions[currentIndex].id;
+
+  if (flagged.has(id)) flagged.delete(id);
+  else flagged.add(id);
+
+  renderFlagged();
+}
+
+function renderFlagged() {
+  const list = document.getElementById("flaggedList");
+  list.innerHTML = "";
+
+  flagged.forEach(id => {
+    const li = document.createElement("li");
+    li.innerText = "Question ID: " + id;
+    list.appendChild(li);
+  });
+}
+</script>
+
+</body>
+</html>
