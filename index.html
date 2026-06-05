@@ -5,7 +5,7 @@
 <title>Linux Quiz</title>
 
 <style>
-  :root {
+:root {
   --bg: #f6f7fb;
   --panel: #ffffff;
   --text: #111;
@@ -16,18 +16,44 @@
   --primary: #2d6cdf;
   --primary-hover: #1f54b8;
 
-  --correct-bg: #163a24;
+  --border: rgba(0,0,0,0.08);
+
+  --correct-bg: #d4f8d4;
   --correct-border: #2ecc71;
 
-  --wrong-bg: #3a1616;
+  --wrong-bg: #ffd6d6;
   --wrong-border: #e74c3c;
 }
-  
+
+/* 🌙 DARK MODE */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --text: #e8e8e8;
+    --muted: #a0a0a0;
+
+    --option-bg: #1f2430;
+
+    --primary: #4c8dff;
+    --primary-hover: #3a74d6;
+
+    --border: rgba(255,255,255,0.08);
+
+    --correct-bg: #163a24;
+    --correct-border: #2ecc71;
+
+    --wrong-bg: #3a1616;
+    --wrong-border: #e74c3c;
+  }
+}
+
+/* BODY */
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: #f6f7fb;
-  color: #111;
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* GRID */
@@ -40,6 +66,7 @@ body {
   gap: 20px;
   align-items: stretch;
 }
+
 /* TOP */
 .top {
   grid-column: 1 / 3;
@@ -49,22 +76,18 @@ body {
   padding: 10px;
 }
 
-/* LEFT QUIZ PANEL */
+/* QUIZ PANEL */
 .middle {
-  background: #fff;
+  background: var(--panel);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 
-  /* IMPORTANT FIX */
-  min-height: 0;          /* prevents weird overflow stretching */
+  min-height: 0;
   height: 100%;
 
   display: flex;
   flex-direction: column;
-
-  /* 🔥 better than full center (prevents bottom sticking look) */
   justify-content: flex-start;
-
   align-items: center;
 
   text-align: center;
@@ -72,7 +95,7 @@ body {
   overflow: auto;
 }
 
-/* QUESTION TEXT CLEANUP */
+/* QUESTION */
 .question {
   font-size: 22px;
   font-weight: 600;
@@ -81,27 +104,28 @@ body {
   line-height: 1.4;
 }
 
-/* OPTIONS BLOCK */
+/* OPTIONS WRAPPER */
 #options {
   width: 100%;
   max-width: 600px;
   text-align: left;
 }
 
-/* OPTIONS TEXT CLEANUP */
+/* OPTION */
 .option {
   display: block;
   margin: 10px 0;
   padding: 12px;
   border-radius: 8px;
   font-size: 16px;
-  background: #fafafa;
+  background: var(--option-bg);
+  border: 1px solid var(--border);
 
   line-height: 1.4;
   word-break: break-word;
 }
 
-  /* IMPROVE LABEL TEXT ALIGNMENT */
+/* CHECKBOX ALIGNMENT */
 .option input {
   margin-right: 8px;
 }
@@ -115,24 +139,35 @@ body {
   width: 100%;
 }
 
+/* BUTTONS */
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--primary);
+  color: white;
+  font-weight: 500;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
 /* RESULT */
 #result {
   margin-top: 15px;
   font-weight: 600;
   text-align: center;
-}
-
-/* BUTTON HOVER */
-button:hover {
-  background: #1f54b8;
+  color: var(--text);
 }
 
 /* RIGHT PANEL */
 .right {
-  background: #fff;
+  background: var(--panel);
   border-radius: 10px;
   padding: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   font-size: 14px;
 }
 
@@ -142,22 +177,24 @@ button:hover {
   margin: 6px 0;
   cursor: pointer;
   text-decoration: underline;
-  color: #2d6cdf;
+  color: var(--primary);
 }
 
 .link:hover {
-  color: #1f54b8;
+  color: var(--primary-hover);
 }
 
 /* HIGHLIGHTING */
 .correct {
-  background: #d4f8d4;
-  border: 1px solid #2ecc71;
+  background: var(--correct-bg);
+  border: 1px solid var(--correct-border);
+  color: var(--text);
 }
 
 .wrong {
-  background: #ffd6d6;
-  border: 1px solid #e74c3c;
+  background: var(--wrong-bg);
+  border: 1px solid var(--wrong-border);
+  color: var(--text);
 }
 
 /* BOTTOM */
@@ -165,7 +202,7 @@ button:hover {
   grid-column: 1 / 3;
   text-align: center;
   font-size: 13px;
-  color: #666;
+  color: var(--muted);
 }
 </style>
   
