@@ -5,7 +5,6 @@
 <title>Linux Quiz</title>
 
 <style>
-/* ===== GLOBAL ===== */
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -13,10 +12,10 @@ body {
   color: #111;
 }
 
-/* ===== LAYOUT GRID (UPDATED) ===== */
+/* ===== GRID ===== */
 .container {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* middle + right only */
+  grid-template-columns: 2fr 1fr;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
   gap: 10px;
@@ -33,16 +32,7 @@ body {
   padding: 10px;
 }
 
-/* RIGHT PANEL */
-.right {
-  background: #fff;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  font-size: 14px;
-}
-
-/* CENTER (QUIZ) */
+/* QUIZ */
 .middle {
   background: #fff;
   border-radius: 12px;
@@ -53,20 +43,23 @@ body {
   justify-content: center;
 }
 
-/* QUESTION */
 .question {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 20px;
 }
 
-/* OPTIONS */
 .option {
   display: block;
   margin: 10px 0;
   padding: 8px;
   border-radius: 6px;
   font-size: 16px;
+}
+
+#result {
+  margin-top: 15px;
+  font-weight: 600;
 }
 
 /* BUTTONS */
@@ -86,20 +79,33 @@ button:hover {
   background: #1f54b8;
 }
 
-#result {
+.button-row {
   margin-top: 15px;
-  font-weight: 600;
 }
 
-/* BOTTOM */
-.bottom {
-  grid-column: 1 / 3;
-  text-align: center;
-  font-size: 13px;
-  color: #666;
+/* RIGHT PANEL */
+.right {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  font-size: 14px;
 }
 
-/* HIGHLIGHTS */
+/* LINKS */
+.link {
+  display: block;
+  margin: 6px 0;
+  cursor: pointer;
+  text-decoration: underline;
+  color: #2d6cdf;
+}
+
+.link:hover {
+  color: #1f54b8;
+}
+
+/* HIGHLIGHTING */
 .correct {
   background: #d4f8d4;
   border: 1px solid #2ecc71;
@@ -110,8 +116,12 @@ button:hover {
   border: 1px solid #e74c3c;
 }
 
-.button-row {
-  margin-top: 15px;
+/* BOTTOM */
+.bottom {
+  grid-column: 1 / 3;
+  text-align: center;
+  font-size: 13px;
+  color: #666;
 }
 </style>
 </head>
@@ -122,7 +132,7 @@ button:hover {
 
   <div class="top">Linux Quiz Challenge</div>
 
-  <!-- CENTER -->
+  <!-- QUIZ AREA -->
   <div class="middle">
     <div id="question" class="question"></div>
     <div id="options"></div>
@@ -136,10 +146,15 @@ button:hover {
     </div>
   </div>
 
-  <!-- RIGHT -->
+  <!-- RIGHT PANEL -->
   <div class="right">
-    <h4>Flagged</h4>
-    <ul id="flaggedList"></ul>
+    <h4>Wrong</h4>
+    <div id="wrongList"></div>
+
+    <hr>
+
+    <h4>Right</h4>
+    <div id="rightList"></div>
   </div>
 
   <div class="bottom">Answer carefully — questions are randomized</div>
@@ -150,7 +165,8 @@ button:hover {
 let questions = [];
 let currentIndex = 0;
 let selectedAnswer = [];
-let flagged = [];
+let wrong = [];
+let right = [];
 
 /* ===== LOAD JSON ===== */
 fetch("qa.json")
@@ -212,7 +228,7 @@ function submitAnswer() {
   const q = questions[currentIndex];
   const correctSet = new Set(q.answer);
 
-  let isCorrect =
+  const isCorrect =
     selectedAnswer.length === q.answer.length &&
     selectedAnswer.every(x => correctSet.has(x));
 
@@ -222,7 +238,7 @@ function submitAnswer() {
     el.classList.remove("correct", "wrong");
   });
 
-  // wrong selected
+  // wrong selections
   selectedAnswer.forEach(opt => {
     if (!correctSet.has(opt)) {
       document.getElementById("opt-" + opt).classList.add("wrong");
@@ -236,6 +252,67 @@ function submitAnswer() {
 
   document.getElementById("result").innerText =
     isCorrect ? "Correct ✅" : "Wrong ❌";
+
+  updateTracking(q, isCorrect);
+}
+
+/* ===== TRACK RESULTS ===== */
+function updateTracking(q, isCorrect) {
+  removeFromLists(q.id);
+
+  if (isCorrect) {
+    right.push(q);
+  } else {
+    wrong.push(q);
+  }
+
+  renderLists();
+}
+
+function removeFromLists(id) {
+  wrong = wrong.filter(q => q.id !== id);
+  right = right.filter(q => q.id !== id);
+}
+
+/* ===== RENDER RIGHT/WRONG ===== */
+function renderLists() {
+  const wrongList = document.getElementById("wrongList");
+  const rightList = document.getElementById("rightList");
+
+  wrongList.innerHTML = "";
+  rightList.innerHTML = "";
+
+  wrong.forEach(q => {
+    const div = document.createElement("div");
+    div.className = "link";
+    div.innerText = q.question;
+
+    div.onclick = () => goToQuestion(q.id);
+
+    wrongList.appendChild(div);
+  });
+
+  right.forEach(q => {
+    const div = document.createElement("div");
+    div.className = "link";
+    div.innerText = q.question;
+
+    div.onclick = () => goToQuestion(q.id);
+
+    rightList.appendChild(div);
+  });
+}
+
+/* ===== NAVIGATE RESET ===== */
+function goToQuestion(id) {
+  const index = questions.findIndex(q => q.id === id);
+  if (index === -1) return;
+
+  currentIndex = index;
+  selectedAnswer = [];
+
+  loadQuestion();
+  document.getElementById("result").innerText = "";
 }
 
 /* ===== NEXT ===== */
@@ -249,41 +326,9 @@ function nextQuestion() {
   }
 }
 
-/* ===== FLAG ===== */
+/* ===== FLAG BUTTON (optional placeholder) ===== */
 function toggleFlag() {
-  const q = questions[currentIndex];
-
-  const exists = flagged.find(f => f.id === q.id);
-
-  if (exists) {
-    flagged = flagged.filter(f => f.id !== q.id);
-  } else {
-    flagged.push({ id: q.id, text: q.question });
-  }
-
-  renderFlags();
-}
-
-function renderFlags() {
-  const list = document.getElementById("flaggedList");
-  list.innerHTML = "";
-
-  flagged.forEach(item => {
-    const li = document.createElement("li");
-    li.innerText = item.text;
-    li.style.cursor = "pointer";
-
-    li.onclick = () => {
-      const index = questions.findIndex(q => q.id === item.id);
-      if (index === -1) return;
-
-      currentIndex = index;
-      loadQuestion();
-      document.getElementById("result").innerText = "";
-    };
-
-    list.appendChild(li);
-  });
+  alert("Optional feature removed in this version");
 }
 </script>
 
