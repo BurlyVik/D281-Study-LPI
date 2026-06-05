@@ -96,6 +96,27 @@ button:hover {
   font-size: 13px;
   color: #666;
 }
+
+  .option {
+  display: block;
+  margin: 10px 0;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.correct {
+  background: #d4f8d4;
+  border: 1px solid #2ecc71;
+}
+
+.wrong {
+  background: #ffd6d6;
+  border: 1px solid #e74c3c;
+}
+
+.button-row {
+  margin-top: 15px;
+}
 </style>
 </head>
 
@@ -113,10 +134,17 @@ button:hover {
   </div>
 
   <div class="middle">
-    <div id="question" class="question"></div>
-    <div id="options"></div>
-    <div id="result"></div>
+  <div id="question" class="question"></div>
+  <div id="options"></div>
+
+  <div id="result"></div>
+
+  <div class="button-row">
+    <button onclick="submitAnswer()">Submit</button>
+    <button onclick="nextQuestion()">Next</button>
+    <button onclick="toggleFlag()">Flag</button>
   </div>
+</div>
 
   <div class="right">
     <h4>Flagged</h4>
@@ -160,18 +188,18 @@ function loadQuestion() {
   document.getElementById("question").innerText =
     `Q${q.id}: ${q.question}`;
 
-  const isMulti = q.answer.length > 1;
-
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
+
+  const isMulti = q.answer.length > 1;
 
   q.options.forEach(opt => {
     const label = document.createElement("label");
     label.className = "option";
+    label.id = "opt-" + opt;
 
     const input = document.createElement("input");
     input.type = isMulti ? "checkbox" : "radio";
-
     input.name = "opt";
     input.value = opt;
 
@@ -186,6 +214,7 @@ function loadQuestion() {
 
     label.appendChild(input);
     label.appendChild(document.createTextNode(" " + opt));
+
     optionsDiv.appendChild(label);
   });
 }
@@ -194,24 +223,37 @@ function loadQuestion() {
 function submitAnswer() {
   const q = questions[currentIndex];
 
-  const correct = [...q.answer].sort().join(",");
-  const user = [...selectedAnswer].sort().join(",");
+  const correctAnswers = q.answer;
 
-  const ok = correct === user;
+  const userSet = new Set(selectedAnswer);
+  const correctSet = new Set(correctAnswers);
+
+  let isCorrect =
+    selectedAnswer.length === correctAnswers.length &&
+    selectedAnswer.every(x => correctSet.has(x));
+
+  // reset highlights first
+  q.options.forEach(opt => {
+    const el = document.getElementById("opt-" + opt);
+    el.classList.remove("correct", "wrong");
+  });
+
+  // 🔴 mark wrong selections
+  selectedAnswer.forEach(opt => {
+    if (!correctSet.has(opt)) {
+      document.getElementById("opt-" + opt)
+        .classList.add("wrong");
+    }
+  });
+
+  // 🟢 always highlight correct answers
+  correctAnswers.forEach(opt => {
+    document.getElementById("opt-" + opt)
+      .classList.add("correct");
+  });
 
   document.getElementById("result").innerText =
-    ok ? "Correct ✅" : "Wrong ❌";
-}
-
-/* ===== NEXT ===== */
-function nextQuestion() {
-  if (currentIndex < questions.length - 1) {
-    currentIndex++;
-    loadQuestion();
-  } else {
-    document.querySelector(".middle").innerHTML =
-      "<h2>Quiz Complete 🎉</h2>";
-  }
+    isCorrect ? "Correct ✅" : "Wrong ❌";
 }
 
 /* ===== FLAG ===== */
