@@ -13,24 +13,28 @@ body {
   color: #111;
 }
 
-/* ===== LAYOUT GRID ===== */
+/* ===== LAYOUT GRID (UPDATED) ===== */
 .container {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 2fr 1fr; /* middle + right only */
   grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  gap: 10px;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* TOP */
 .top {
-  grid-column: 1 / 4;
+  grid-column: 1 / 3;
   text-align: center;
   font-size: 22px;
   font-weight: 600;
   padding: 10px;
 }
 
-/* LEFT / RIGHT PANELS */
-.left, .right {
+/* RIGHT PANEL */
+.right {
   background: #fff;
   border-radius: 10px;
   padding: 15px;
@@ -38,7 +42,7 @@ body {
   font-size: 14px;
 }
 
-/* CENTER (MAIN QUIZ) */
+/* CENTER (QUIZ) */
 .middle {
   background: #fff;
   border-radius: 12px;
@@ -60,6 +64,8 @@ body {
 .option {
   display: block;
   margin: 10px 0;
+  padding: 8px;
+  border-radius: 6px;
   font-size: 16px;
 }
 
@@ -87,19 +93,13 @@ button:hover {
 
 /* BOTTOM */
 .bottom {
-  grid-column: 1 / 4;
+  grid-column: 1 / 3;
   text-align: center;
   font-size: 13px;
   color: #666;
 }
 
-  .option {
-  display: block;
-  margin: 10px 0;
-  padding: 8px;
-  border-radius: 6px;
-}
-
+/* HIGHLIGHTS */
 .correct {
   background: #d4f8d4;
   border: 1px solid #2ecc71;
@@ -121,19 +121,22 @@ button:hover {
 <div class="container">
 
   <div class="top">Linux Quiz Challenge</div>
+
+  <!-- CENTER -->
   <div class="middle">
-  <div id="question" class="question"></div>
-  <div id="options"></div>
+    <div id="question" class="question"></div>
+    <div id="options"></div>
 
-  <div id="result"></div>
+    <div id="result"></div>
 
-  <div class="button-row">
-    <button onclick="submitAnswer()">Submit</button>
-    <button onclick="nextQuestion()">Next</button>
-    <button onclick="toggleFlag()">Flag</button>
+    <div class="button-row">
+      <button onclick="submitAnswer()">Submit</button>
+      <button onclick="nextQuestion()">Next</button>
+      <button onclick="toggleFlag()">Flag</button>
+    </div>
   </div>
-</div>
 
+  <!-- RIGHT -->
   <div class="right">
     <h4>Flagged</h4>
     <ul id="flaggedList"></ul>
@@ -153,7 +156,7 @@ let flagged = [];
 fetch("qa.json")
   .then(r => r.json())
   .then(data => {
-    questions = shuffle([...data]);   // 🔥 RANDOMIZE
+    questions = shuffle([...data]);
     loadQuestion();
   });
 
@@ -186,7 +189,6 @@ function loadQuestion() {
     const input = document.createElement("input");
     input.type = isMulti ? "checkbox" : "radio";
     input.name = "opt";
-
     input.value = opt;
 
     input.onchange = () => {
@@ -208,38 +210,43 @@ function loadQuestion() {
 /* ===== SUBMIT ===== */
 function submitAnswer() {
   const q = questions[currentIndex];
-
-  const correctAnswers = q.answer;
-
-  const userSet = new Set(selectedAnswer);
-  const correctSet = new Set(correctAnswers);
+  const correctSet = new Set(q.answer);
 
   let isCorrect =
-    selectedAnswer.length === correctAnswers.length &&
+    selectedAnswer.length === q.answer.length &&
     selectedAnswer.every(x => correctSet.has(x));
 
-  // reset highlights first
+  // reset styles
   q.options.forEach(opt => {
     const el = document.getElementById("opt-" + opt);
     el.classList.remove("correct", "wrong");
   });
 
-  // 🔴 mark wrong selections
+  // wrong selected
   selectedAnswer.forEach(opt => {
     if (!correctSet.has(opt)) {
-      document.getElementById("opt-" + opt)
-        .classList.add("wrong");
+      document.getElementById("opt-" + opt).classList.add("wrong");
     }
   });
 
-  // 🟢 always highlight correct answers
-  correctAnswers.forEach(opt => {
-    document.getElementById("opt-" + opt)
-      .classList.add("correct");
+  // correct answers always green
+  q.answer.forEach(opt => {
+    document.getElementById("opt-" + opt).classList.add("correct");
   });
 
   document.getElementById("result").innerText =
     isCorrect ? "Correct ✅" : "Wrong ❌";
+}
+
+/* ===== NEXT ===== */
+function nextQuestion() {
+  if (currentIndex < questions.length - 1) {
+    currentIndex++;
+    loadQuestion();
+  } else {
+    document.querySelector(".middle").innerHTML =
+      "<h2>Quiz Complete 🎉</h2>";
+  }
 }
 
 /* ===== FLAG ===== */
@@ -251,7 +258,7 @@ function toggleFlag() {
   if (exists) {
     flagged = flagged.filter(f => f.id !== q.id);
   } else {
-    flagged.push({ id: q.id, index: currentIndex, text: q.question });
+    flagged.push({ id: q.id, text: q.question });
   }
 
   renderFlags();
@@ -263,32 +270,20 @@ function renderFlags() {
 
   flagged.forEach(item => {
     const li = document.createElement("li");
-
-    li.innerText = item.text;   // ONLY question text
-
+    li.innerText = item.text;
     li.style.cursor = "pointer";
-    li.style.marginBottom = "8px";
 
     li.onclick = () => {
-      goToFlagged(item.id);
+      const index = questions.findIndex(q => q.id === item.id);
+      if (index === -1) return;
+
+      currentIndex = index;
+      loadQuestion();
+      document.getElementById("result").innerText = "";
     };
 
     list.appendChild(li);
   });
-}
-
-  function goToFlagged(id) {
-  const index = questions.findIndex(q => q.id === id);
-  if (index === -1) return;
-
-  currentIndex = index;
-
-  // reset selection + UI state
-  selectedAnswer = [];
-
-  loadQuestion(); // reload clean (unanswered)
-
-  document.getElementById("result").innerText = "";
 }
 </script>
 
