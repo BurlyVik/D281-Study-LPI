@@ -224,6 +224,7 @@ button:hover {
     <div class="button-row">
       <button onclick="submitAnswer()">Submit</button>
       <button onclick="nextQuestion()">Next</button>
+      <button onclick="searchGoogle()">Google Question</button>
     </div>
   </div>
 
@@ -439,7 +440,12 @@ function formatText(str) {
     .toLowerCase()
     .replace(/^\w/, c => c.toUpperCase()); // capitalize first letter only
 }
-  
+
+function searchGoogle() {
+  const q = questions[currentIndex].question;
+  const url = "https://www.google.com/search?q=" + encodeURIComponent(q);
+  window.open(url, "_blank");
+}
 </script>
 
 </body>
