@@ -187,6 +187,7 @@ function shuffle(arr) {
 
 /* ===== LOAD QUESTION ===== */
 function loadQuestion() {
+  document.getElementById("question").innerText = q.question;
   const q = questions[currentIndex];
   selectedAnswer = [];
 
