@@ -3,83 +3,182 @@
 <head>
 <meta charset="UTF-8" />
 <title>Linux Quiz</title>
+
 <style>
-  body { font-family: Arial, sans-serif; margin: 30px; }
-  .question { font-size: 20px; margin-bottom: 15px; }
-  .option { display: block; margin: 8px 0; }
-  button { margin-top: 10px; margin-right: 10px; padding: 8px 12px; }
-  .result { font-weight: bold; margin-top: 15px; }
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #f6f7fb;
+  color: #111;
+}
+
+/* ===== LAYOUT GRID ===== */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  gap: 10px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* TOP */
+.top {
+  grid-column: 1 / 4;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  padding: 10px;
+}
+
+/* LEFT / RIGHT PANELS */
+.left, .right {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  font-size: 14px;
+}
+
+/* CENTER (MAIN QUIZ) */
+.middle {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* QUESTION */
+.question {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* OPTIONS */
+.option {
+  display: block;
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+/* BUTTONS */
+button {
+  margin-top: 12px;
+  margin-right: 8px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #2d6cdf;
+  color: white;
+  font-weight: 500;
+}
+
+button:hover {
+  background: #1f54b8;
+}
+
+#result {
+  margin-top: 15px;
+  font-weight: 600;
+}
+
+/* BOTTOM */
+.bottom {
+  grid-column: 1 / 4;
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+}
 </style>
 </head>
+
 <body>
 
-<h2>Linux Quiz</h2>
+<div class="container">
 
-<div id="quiz-container">
-  <div id="question" class="question"></div>
-  <div id="options"></div>
+  <div class="top">Linux Quiz Challenge</div>
 
-  <button onclick="submitAnswer()">Submit</button>
-  <button onclick="nextQuestion()" id="nextBtn" disabled>Next</button>
-  <button onclick="toggleFlag()">Flag for review</button>
+  <div class="left">
+    <h4>Navigation</h4>
+    <button onclick="nextQuestion()">Next</button>
+    <button onclick="submitAnswer()">Submit</button>
+    <button onclick="toggleFlag()">Flag</button>
+  </div>
 
-  <div id="result" class="result"></div>
+  <div class="middle">
+    <div id="question" class="question"></div>
+    <div id="options"></div>
+    <div id="result"></div>
+  </div>
+
+  <div class="right">
+    <h4>Flagged</h4>
+    <ul id="flaggedList"></ul>
+  </div>
+
+  <div class="bottom">Answer carefully — questions are randomized</div>
+
 </div>
-
-<hr>
-<h3>Flagged Questions</h3>
-<ul id="flaggedList"></ul>
 
 <script>
 let questions = [];
 let currentIndex = 0;
-let selectedAnswer = null;
+let selectedAnswer = [];
 let flagged = new Set();
 
-
+/* ===== LOAD JSON ===== */
 fetch("qa.json")
-  .then(res => res.json())
+  .then(r => r.json())
   .then(data => {
-    questions = data;
+    questions = shuffle([...data]);   // 🔥 RANDOMIZE
     loadQuestion();
-  })
-  .catch(err => {
-    document.body.innerHTML = "Failed to load qa.json";
-    console.error(err);
   });
 
+/* ===== SHUFFLE ===== */
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ===== LOAD QUESTION ===== */
 function loadQuestion() {
   const q = questions[currentIndex];
   selectedAnswer = [];
 
   document.getElementById("result").innerText = "";
-  document.getElementById("nextBtn").disabled = true;
 
   document.getElementById("question").innerText =
     `Q${q.id}: ${q.question}`;
 
+  const isMulti = q.answer.length > 1;
+
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
-
-  const isMultiple = q.answer.length > 1;
 
   q.options.forEach(opt => {
     const label = document.createElement("label");
     label.className = "option";
 
     const input = document.createElement("input");
-    input.type = isMultiple ? "checkbox" : "radio";
-    input.name = "option";
+    input.type = isMulti ? "checkbox" : "radio";
 
+    input.name = "opt";
     input.value = opt;
 
     input.onchange = () => {
-      if (isMultiple) {
-        if (input.checked) {
-          selectedAnswer.push(opt);
-        } else {
-          selectedAnswer = selectedAnswer.filter(a => a !== opt);
-        }
+      if (isMulti) {
+        if (input.checked) selectedAnswer.push(opt);
+        else selectedAnswer = selectedAnswer.filter(x => x !== opt);
       } else {
         selectedAnswer = [opt];
       }
@@ -87,40 +186,43 @@ function loadQuestion() {
 
     label.appendChild(input);
     label.appendChild(document.createTextNode(" " + opt));
-
     optionsDiv.appendChild(label);
   });
 }
 
+/* ===== SUBMIT ===== */
 function submitAnswer() {
   const q = questions[currentIndex];
 
-  if (!selectedAnswer || selectedAnswer.length === 0) {
-    alert("Select at least one answer");
-    return;
-  }
+  const correct = [...q.answer].sort().join(",");
+  const user = [...selectedAnswer].sort().join(",");
 
-  const correct = q.answer.sort().join(",");
-  const user = selectedAnswer.sort().join(",");
-
-  const isCorrect = correct === user;
+  const ok = correct === user;
 
   document.getElementById("result").innerText =
-    isCorrect ? "Correct ✅" : "Wrong ❌";
-
-  document.getElementById("nextBtn").disabled = false;
+    ok ? "Correct ✅" : "Wrong ❌";
 }
 
+/* ===== NEXT ===== */
+function nextQuestion() {
+  if (currentIndex < questions.length - 1) {
+    currentIndex++;
+    loadQuestion();
+  } else {
+    document.querySelector(".middle").innerHTML =
+      "<h2>Quiz Complete 🎉</h2>";
+  }
+}
+
+/* ===== FLAG ===== */
 function toggleFlag() {
   const id = questions[currentIndex].id;
 
-  if (flagged.has(id)) flagged.delete(id);
-  else flagged.add(id);
-
-  renderFlagged();
+  flagged.has(id) ? flagged.delete(id) : flagged.add(id);
+  renderFlags();
 }
 
-function renderFlagged() {
+function renderFlags() {
   const list = document.getElementById("flaggedList");
   list.innerHTML = "";
 
