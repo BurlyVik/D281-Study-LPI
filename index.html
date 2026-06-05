@@ -15,57 +15,64 @@ body {
 /* ===== GRID ===== */
 .container {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 320px;
   height: 100vh;
-  gap: 10px;
   padding: 20px;
   box-sizing: border-box;
+  gap: 20px;
 }
 
-/* TOP */
-.top {
-  grid-column: 1 / 3;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  padding: 10px;
-}
-
-/* QUIZ */
+/* QUIZ CARD (CENTERED CONTENT) */
 .middle {
   background: #fff;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: center;   /* vertical center */
+  align-items: center;       /* horizontal center */
+
+  text-align: center;
+  padding: 40px;
 }
 
+/* QUESTION */
 .question {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  max-width: 700px;
 }
 
+/* OPTIONS CONTAINER */
+#options {
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+}
+
+/* OPTION */
 .option {
   display: block;
   margin: 10px 0;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 10px;
+  border-radius: 8px;
   font-size: 16px;
+  background: #fafafa;
 }
 
-#result {
-  margin-top: 15px;
-  font-weight: 600;
+/* BUTTON ROW */
+.button-row {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
 }
 
 /* BUTTONS */
 button {
-  margin-top: 12px;
-  margin-right: 8px;
   padding: 10px 14px;
   border: none;
   border-radius: 8px;
@@ -79,20 +86,23 @@ button:hover {
   background: #1f54b8;
 }
 
-.button-row {
+/* RESULT */
+#result {
   margin-top: 15px;
+  font-weight: 600;
 }
 
 /* RIGHT PANEL */
 .right {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   font-size: 14px;
+  overflow-y: auto;
 }
 
-/* LINKS */
+/* LINKS (WRONG/RIGHT ITEMS) */
 .link {
   display: block;
   margin: 6px 0;
@@ -107,21 +117,13 @@ button:hover {
 
 /* HIGHLIGHTING */
 .correct {
-  background: #d4f8d4;
+  background: #d4f8d4 !important;
   border: 1px solid #2ecc71;
 }
 
 .wrong {
-  background: #ffd6d6;
+  background: #ffd6d6 !important;
   border: 1px solid #e74c3c;
-}
-
-/* BOTTOM */
-.bottom {
-  grid-column: 1 / 3;
-  text-align: center;
-  font-size: 13px;
-  color: #666;
 }
 </style>
 </head>
